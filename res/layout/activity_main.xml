@@ -8,28 +8,51 @@
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="İl Seçin:"
+        android:text="Kronometre"
         android:textSize="20sp"
+        android:layout_gravity="center"
         android:textStyle="bold" />
 
-    <Spinner
-        android:id="@+id/spinner1"
-        android:layout_width="wrap_content"
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-         />
+        android:layout_marginTop="20dp"/>
 
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="İlçe Seçin:"
-        android:layout_marginTop="10dp"
+        android:text="0 sn"
         android:textSize="20sp"
-        android:textStyle="bold"  />
+        android:layout_marginTop="10dp"
+        android:layout_gravity="center" />
 
-    <Spinner
-        android:id="@+id/spinner2"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-         />
+        android:layout_gravity="center" >
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Başlat" />
+        <Button
+            android:id="@+id/button2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Durdur" />
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Sıfırla" />
+
+    </LinearLayout>
+
 </LinearLayout>

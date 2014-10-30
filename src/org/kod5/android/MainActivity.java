@@ -1,81 +1,132 @@
 package org.kod5.android;
 
 import android.app.Activity;
+import android.content.res.Resources.Theme;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
-	//Spinner içerisine koyacağımız verileri tanımlıyoruz.
-	private String[] iller={"İSTANBUL","ANKARA"};
-	private String[] ilceler0={"ADALAR","ARNAVUTKÖY","ATAŞEHİR","AVCILAR","BAğCILAR","BAHÇELİEVLER","BAKIRKÖY","BAŞAKŞEHİR","BAYRAMPAŞA","BEŞİKTAŞ","BEYLİKDÜZÜ","BEYOĞLU","BÜYÜKÇEKMECE","BEYKOZ","ÇATALCA","ÇEKMEKÖY","ESENLER","ESENYURT","EYÜP","FATİH","GAZİOSMANPAŞA","GÜNGÖREN","KADIKÖY","KAĞITHANE","KARTAL","KÜÇÜKÇEKMECE","MALTEPE","PENDİK","SANCAKTEPE","SARIYER","SİLİVRİ","SULTANBEYLİ","SULTANGAZİ","ŞİLE","ŞİŞLİ","TUZLA","ÜSKÜDAR","ÜMRANİYE","ZEYTİNBURNU"};
-	private String[] ilceler1={"AKYURT","ALTINDAĞ","AYAŞ","BALA","BEYPAZARI","ÇAMLIDERE","ÇANKAYA","ÇUBUK","ELMADAĞ","ETİMESGUT","EVREN","GÖLBAŞI","GÜDÜL","HAYMANA","KALECİK","KAZAN","KEÇİÖREN","KIZILCAHAMAM","MAMAK","NALLIHAN","POLATLI","PURSAKLAR","SİNCAN","ŞEREFLİKOÇHİSAR","YENİMAHALLE"};
+	private ProgressBar progressBar;
+	private int progressStatus = 0;
+	private TextView textView;
+	private Handler handler = new Handler();
+	private Button baslat;
+	private Button durdur;
+	private Button sifirla;
+	private boolean suspended = false;
+	private boolean stopped = false;
+
+	private void initialize() {
+		progressStatus=0;
+		progressBar.setProgress(progressStatus);
+		textView.setText("0sn / 60sn");
+		baslat.setEnabled(true);
+		durdur.setEnabled(false);
+		sifirla.setEnabled(false);
+		suspended=false;
+	}
 	
-	//Spinner'ları ve Adapter'lerini tanımlıyoruz.
-	private Spinner spinnerIller;
-	private Spinner spinnerIlceler;
-	private ArrayAdapter<String> dataAdapterForIller; 
-	private ArrayAdapter<String> dataAdapterForIlceler;
-	
-	
-	@Override // Bu metod uygulama açıldığında çalıştırılan metod.
-	protected void onCreate(Bundle savedInstanceState) { 
+	@Override
+	// Bu metod uygulama açıldığında çalıştırılan metod.
+	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
-		//xml kısmında hazırladığımğız spinnerları burda tanımladıklarımızla eşleştiriyoruz.
-		spinnerIller = (Spinner) findViewById(R.id.spinner1);
-		spinnerIlceler = (Spinner) findViewById(R.id.spinner2);
-		 
-        //Spinner'lar için adapterleri hazırlıyoruz. 
-        dataAdapterForIller = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, iller);
-        dataAdapterForIlceler = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item,ilceler0);
-        
-        //Listelenecek verilerin görünümünü belirliyoruz.
-        dataAdapterForIller.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        dataAdapterForIlceler.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
- 
-        //Hazırladğımız Adapter'leri Spinner'lara ekliyoruz.
-        spinnerIller.setAdapter(dataAdapterForIller);
-        spinnerIlceler.setAdapter(dataAdapterForIlceler);
-        
-        // Listelerden bir eleman seçildiğinde yapılacakları tanımlıyoruz.
-		spinnerIller.setOnItemSelectedListener(new OnItemSelectedListener() {
+		progressBar = (ProgressBar) findViewById(R.id.progressBar1);
+		progressBar.setMax(60);
+		progressBar.setIndeterminate(false);
+		textView = (TextView) findViewById(R.id.textView2);
+		baslat = (Button) findViewById(R.id.button1);
+		durdur = (Button) findViewById(R.id.button2);
+		sifirla = (Button) findViewById(R.id.button3);
+
+		initialize();
+
+		baslat.setOnClickListener(new OnClickListener() {
 
 			@Override
-			public void onItemSelected(AdapterView<?> parent, View view,
-					int position, long id) {
-				//Hangi il seçilmişse onun ilçeleri adapter'e ekleniyor.
-				if(parent.getSelectedItem().toString().equals(iller[0])) 
-					dataAdapterForIlceler = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item,ilceler0);
-				else if(parent.getSelectedItem().toString().equals(iller[1]))
-					dataAdapterForIlceler = new ArrayAdapter<String>(MainActivity.this, android.R.layout.simple_spinner_item,ilceler1);
-				
-				dataAdapterForIlceler.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-				spinnerIlceler.setAdapter(dataAdapterForIlceler);
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
+			public void onClick(View arg0) {
+				setKronometre().start();
+				stopped=false;
+				baslat.setEnabled(false);
+				durdur.setEnabled(true);
+				sifirla.setEnabled(true);
 			}
 		});
-		
-		spinnerIlceler.setOnItemSelectedListener(new OnItemSelectedListener() {
+		durdur.setOnClickListener(new OnClickListener() {
 
-					@Override
-					public void onItemSelected(AdapterView<?> parent, View view,
-							int position, long id) {
-						//Seçilen il ve ilçeyi ekranda gösteriyoruz.
-						Toast.makeText(getBaseContext(), ""+spinnerIller.getSelectedItem().toString()+"\n"+parent.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
-					}
+			@SuppressWarnings("deprecation")
+			@Override
+			public void onClick(View arg0) {
+				if (suspended) {
+					suspended = false;
+					durdur.setText("Durdur");
 
-					public void onNothingSelected(AdapterView<?> parent) {
+				} else {
+					suspended = true;
+					durdur.setText("Devam Et");
+				}
+			}
+		});
+		sifirla.setOnClickListener(new OnClickListener() {
+
+			@SuppressWarnings("deprecation")
+			@Override
+			public void onClick(View arg0) {
+				stopped=true;
+				
+				initialize();
+				
+			}
+
+			
+		});
+
+	}
+	private Thread setKronometre(){
+		return new Thread(new Runnable() {
+			public void run() {
+					while (progressStatus < 60) {
+						while (suspended) {
+							try {
+								Thread.sleep(300);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+						if(stopped)
+							break;
+						progressStatus += 1;
+						// Update the progress bar and display the
+						// current value in the text view
+						handler.post(new Runnable() {
+							public void run() {
+								progressBar.setProgress(progressStatus);
+								textView.setText(progressStatus + "sn / "
+										+ progressBar.getMax()+"sn");
+							}
+						});
+						
+						try {
+							// Sleep for 1 second.
+							// Just to display the progress slowly
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 					}
-				});
+			}
+		});
 	}
 }
