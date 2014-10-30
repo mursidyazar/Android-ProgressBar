@@ -18,43 +18,34 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	private ProgressBar progressBar;
-	private int progressStatus = 0;
 	private TextView textView;
 	private Handler handler = new Handler();
 	private Button baslat;
 	private Button durdur;
 	private Button sifirla;
-	private boolean suspended = false;
-	private boolean stopped = false;
+	private int progressStatus = 0; 
+	private boolean suspended = false;//Durdur butonuna basıldığında bu değeri true yapacağız.
+	private boolean stopped = false;//Sıfırla butonuna basıldığında bu değeri true yapacağız.
 
-	private void initialize() {
-		progressStatus=0;
-		progressBar.setProgress(progressStatus);
-		textView.setText("0sn / 60sn");
-		baslat.setEnabled(true);
-		durdur.setEnabled(false);
-		sifirla.setEnabled(false);
-		suspended=false;
-	}
-	
 	@Override
 	// Bu metod uygulama açıldığında çalıştırılan metod.
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+		// Bileşenleri eşleştiriyoruz.
 		progressBar = (ProgressBar) findViewById(R.id.progressBar1);
-		progressBar.setMax(60);
-		progressBar.setIndeterminate(false);
 		textView = (TextView) findViewById(R.id.textView2);
 		baslat = (Button) findViewById(R.id.button1);
 		durdur = (Button) findViewById(R.id.button2);
 		sifirla = (Button) findViewById(R.id.button3);
 
-		initialize();
+		progressBar.setMax(60); //ProgressBar'ın Max değerini belirliyoruz.
+		progressBar.setIndeterminate(false); //ProgressBar'ın tekrar eden bir animasyon ile çalışmasını önlüyoruz.
+
+		initValues();
 
 		baslat.setOnClickListener(new OnClickListener() {
-
 			@Override
 			public void onClick(View arg0) {
 				setKronometre().start();
@@ -65,14 +56,11 @@ public class MainActivity extends Activity {
 			}
 		});
 		durdur.setOnClickListener(new OnClickListener() {
-
-			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View arg0) {
 				if (suspended) {
 					suspended = false;
 					durdur.setText("Durdur");
-
 				} else {
 					suspended = true;
 					durdur.setText("Devam Et");
@@ -80,36 +68,41 @@ public class MainActivity extends Activity {
 			}
 		});
 		sifirla.setOnClickListener(new OnClickListener() {
-
-			@SuppressWarnings("deprecation")
 			@Override
 			public void onClick(View arg0) {
 				stopped=true;
-				
-				initialize();
-				
+				initValues();
 			}
-
-			
 		});
 
 	}
+	
+	private void initValues() { //Başlangıç değerlerini set ediyoruz.
+		progressStatus=0;
+		progressBar.setProgress(progressStatus);
+		textView.setText("0sn / 60sn");
+		baslat.setEnabled(true);
+		durdur.setEnabled(false);
+		sifirla.setEnabled(false);
+		durdur.setText("Durdur");
+		suspended=false;
+	}
+	
 	private Thread setKronometre(){
 		return new Thread(new Runnable() {
 			public void run() {
 					while (progressStatus < 60) {
-						while (suspended) {
+						while (suspended) { //Eğer kronometre durdurulduysa bekle
 							try {
 								Thread.sleep(300);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
 						}
-						if(stopped)
+						if(stopped) // Eğer kronometre sıfırlandıysa işlemi sonlandır
 							break;
 						progressStatus += 1;
-						// Update the progress bar and display the
-						// current value in the text view
+						// yeni değeri ekranda göster ve progressBar'a set et.
 						handler.post(new Runnable() {
 							public void run() {
 								progressBar.setProgress(progressStatus);
